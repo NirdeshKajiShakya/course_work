@@ -247,6 +247,7 @@ def benchmark_execution(sizes=[100, 1000, 10000]):
 
     # Tracking storage for results
     results = {ds_name: {"random_ins": [], "sorted_ins": [], "search": []} for ds_name in data_structures}
+    benchmark_rows = {ds_name: [] for ds_name in data_structures}
 
     print(f"{'Structure':<12} | {'N':<6} | {'Order':<8} | {'Insert (ms)':<12} | {'Search (ms)':<12}")
     print("-" * 60)
@@ -281,7 +282,11 @@ def benchmark_execution(sizes=[100, 1000, 10000]):
                     results[ds_name]["random_ins"].append(insert_ms)
                     results[ds_name]["search"].append(search_ms)
 
-                print(f"{ds_name:<12} | {size:<6} | {order_str:<8} | {insert_ms:<12.3f} | {search_ms:<12.3f}")
+                benchmark_rows[ds_name].append((size, order_str, insert_ms, search_ms))
+
+    for ds_name in data_structures:
+        for size, order_str, insert_ms, search_ms in benchmark_rows[ds_name]:
+            print(f"{ds_name:<12} | {size:<6} | {order_str:<8} | {insert_ms:<12.3f} | {search_ms:<12.3f}")
 
     plot_benchmark_results(sizes, results)
 
