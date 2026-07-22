@@ -136,3 +136,60 @@ if __name__ == "__main__":
     print("Dijkstra from City_A:", dijkstra(g, "City_A"))
     print("Prim's MST from City_A:", prim_mst(g, "City_A"))
     print("Bellman-Ford from City_A:", bellman_ford(g, "City_A"))
+
+#Benchmarking and performance analysis can be added here for larger graphs.
+import random
+import time
+
+def generate_random_graph(num_nodes: int, num_edges: int, is_directed: bool = True) -> Graph:
+    """Generates a random connected graph with non-negative weights."""
+    g = Graph(is_directed=is_directed)
+    nodes = [f"N_{i}" for i in range(num_nodes)]
+    
+    # Ensure connectivity (Line graph backbone)
+    for i in range(num_nodes - 1):
+        g.add_edge(nodes[i], nodes[i+1], random.uniform(1.0, 50.0))
+        
+    # Fill remaining edges randomly
+    current_edges = num_nodes - 1
+    while current_edges < num_edges:
+        u, v = random.sample(nodes, 2)
+        g.add_edge(u, v, random.uniform(1.0, 50.0))
+        current_edges += 1
+        
+    return g
+
+def benchmark_algorithms(runs: int = 5):
+    test_cases = [
+        ("Sparse", 1000, 3000),
+        ("Dense", 1000, 100000),
+        ("Large Sparse", 10000, 40000)
+    ]
+    
+    print(f"{'Category':<15} | {'|V|, |E|':<18} | {'Dijkstra (ms)':<15} | {'Prim (ms)':<15} | {'Bellman-Ford (ms)':<15}")
+    print("-" * 85)
+    
+    for name, v_count, e_count in test_cases:
+        g = generate_random_graph(v_count, e_count)
+        start_node = "N_0"
+        
+        # 1. Benchmark Dijkstra
+        t0 = time.perf_counter()
+        for _ in range(runs): dijkstra(g, start_node)
+        dijkstra_ms = ((time.perf_counter() - t0) / runs) * 1000
+        
+        # 2. Benchmark Prim
+        t0 = time.perf_counter()
+        for _ in range(runs): prim_mst(g, start_node)
+        prim_ms = ((time.perf_counter() - t0) / runs) * 1000
+        
+        # 3. Benchmark Bellman-Ford (Limit runs on dense graphs if slow)
+        bf_runs = 1 if name == "Large Sparse" else runs
+        t0 = time.perf_counter()
+        for _ in range(bf_runs): bellman_ford(g, start_node)
+        bf_ms = ((time.perf_counter() - t0) / bf_runs) * 1000
+        
+        print(f"{name:<15} | {f'({v_count}, {e_count})':<18} | {dijkstra_ms:<15.2f} | {prim_ms:<15.2f} | {bf_ms:<15.2f}")
+
+if __name__ == "__main__":
+    benchmark_algorithms()
